@@ -45,8 +45,8 @@ function backEndAnswer(key){
   const backEndAnswer = new Promise((resolve, reject) => {
     let Answer;  
     let AnswerDelay;
-    Answer = Math.round(getRandomInRange(0,11))>5 ? true : false
-    AnswerDelay = getRandomInRange(500,1000)
+    Answer = Math.round(getRandomInRange(0,10))>1 ? true : false
+    AnswerDelay = getRandomInRange(100,200)
     setTimeout(() => {
       // console.log('926 ) рандомный Answer в промисе. пока не используется ', Answer)  
       resolve(Answer)
@@ -59,7 +59,7 @@ function filterObject(obj){
   let filteredShallowObject={}
   let filterOn=false;
     Object.entries(obj).forEach(([key, value]) => {
-      // if (key ==='filter') {console.log('883) key ', key,'value', value)        }
+      // if (key ==='filter') {console.log('62) key =', key,'value', value)        }
       if ((key ==='filter') && (value === true)) {
         filterOn=true
       } else {
@@ -74,12 +74,24 @@ function filterObject(obj){
     if ( filterOn===true) {filteredShallowObject = 'цензура'}
   return filteredShallowObject
 }
+function deepCopy(obj1){
+  let obj2 ={}
+  for (const [key, value] of Object.entries(obj1)) {
+      if ((typeof(value)==='object')&&(value!=null)) {
+        obj2[key]=deepCopy(value)
+      } else {
+        obj2[key] = value
+      }
+    }
+  return obj2
+}
 //++++++++++++++++++
 function test1(objFilterOff, nameOfObject){
     let objFilterOn={}
     let keysNameArray = Object.keys(objFilterOff)
       if (keysNameArray.includes('filter')) {
-        objFilterOn.filter='test'
+        // objFilterOn.filter=true
+        objFilterOn.filter= Math.round(getRandomInRange(0,10))>3 ? true : false
       } 
       for (const [key, value] of Object.entries(objFilterOff)) {
         if (key !=='filter') {
@@ -93,8 +105,9 @@ function test1(objFilterOff, nameOfObject){
     return objFilterOn
 }
 
-function promiseFiltration(){
+function promiseFiltration(obj1){
 // ПОСЛЕДОВАТЕЛЬНЫЙ THEN
+let obj2=deepCopy(obj1);
 
 const backEndAnswer = new Promise((resolve, reject) => {
   let Answer;  
@@ -111,12 +124,12 @@ const backEndAnswer = new Promise((resolve, reject) => {
   backEndAnswer
   .then(
     result=>{
-    console.log('124) результат предыдущего: ', result)
-    let settedFiltersObject=initialObject;
-    if (typeof(settedFiltersObject["Name0-0"])==='object') {
-      settedFiltersObject["Name0-0"].filter=result+'_test'
+    console.log('---------------- 1й тестовый промис ----------------')
+    console.log('115) результат предыдущего: ', result)
+    if (typeof(obj2["Name0-0"])==='object') {
+      obj2["Name0-0"].filter=result+'_test_1'
     }
-    return (settedFiltersObject)
+    return (obj2)
     },
     error => {
       alert("132) Rejected: " + error); 
@@ -125,11 +138,10 @@ const backEndAnswer = new Promise((resolve, reject) => {
   )
   .then(
     result=>{
-    let settedFiltersObject=initialObject;
-    if (typeof(settedFiltersObject["Name0-1"])==='object') {
-      settedFiltersObject["Name0-1"].filter=true
+    if (typeof(obj2["Name0-1"])==='object') {
+      obj2["Name0-1"].filter=true
     }
-    return (settedFiltersObject)
+    return (obj2)
     }
   )  
   .then(
@@ -146,36 +158,84 @@ const backEndAnswer = new Promise((resolve, reject) => {
     console.log('162) The end. finally')
   })
 }
-function promiseFiltration2(initialObject, objName){
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {    resolve('Answer')  }, 500 );
-  })
-  .then(
-    result=>{
-    console.log('155) результат предыдущего: ', result)
+
+function promiseFiltration2(objFilterOff, nameOfObject){
+  let objFilterOn={}
+  let keysNameArray = Object.keys(objFilterOff)
+
+  if (keysNameArray.includes('filter')) {
+    objFilterOn.filter= backEndAnswer().then(res=>{objFilterOn.filter= res})
+  } 
+  for (const [key, value] of Object.entries(objFilterOff)) {
+    if (key !=='filter') {
+      if ((typeof(value)==='object')&&(value!=null)) {
+        promiseFiltration2(value,key)
+        .then(
+          result=>{objFilterOn[key]=result}
+        )
+      } else {
+        objFilterOn[key] = value
+      }
     }
-  )
-  .catch(error => {
-    alert(error); // Error: Not Found
-  });
-  // .then(
-  //   result=>{
-  //     let filteredObject =filterObject(result)
-  //     return (console.log('155) отфильтрованный обьект', filteredObject))
-  //   }
-  // )
+  }
+
+  return new Promise((resolve, reject) => {
+      resolve(objFilterOn)
+  })
 }
 
-let testAnswer = promiseFiltration()
+function filterObject2(obj){
+  console.log('189) Входящий obj =', obj)
+  let filteredObject={}
+  let filterOn=false;
+    Object.entries(obj).forEach(([key, value]) => {
+      if (key ==='filter') {console.log('193) key =', key,'; value= ', value)}
+      if ((key ==='filter') && (obj[key] === true)) {
+        // value === true
+        filterOn=true
+      } else {
+        if ((typeof(value) !='object')||(value ===null)) {
+          console.log('199) Простое значение. key = ', key,'; value= ', value)          
+          filteredObject[key] = value
+        } else {
+          console.log('202) Объект. key = ', key,'; value= ', value)          
+          filteredObject[key] = filterObject2(value)
+        }
+      }
+    });
 
-
-let initialObject=createRandomObj(3, 0, 2)
-console.log('1-164) начальный обьект: ', initialObject)
+    if ( filterOn===true) {filteredObject = 'цензура'}
+  // return filteredObject
+  return new Promise((resolve, reject) => {
+    resolve(filteredObject)
+})
+}
+/*ширина объекта*/ let length =2  
+/*шлубина */  let depth=2
+let initialObject=createRandomObj(length, 0, depth)
+console.log('1-188) начальный обьект: ', initialObject)
 let settedFiltersObject = test1(initialObject, 'initialObjectID')
-console.log('2-166) вывод с включенным фильтром ', settedFiltersObject)
+console.log('2-190) вывод с включенным фильтром ', settedFiltersObject)
 let filteredObject =filterObject(settedFiltersObject)
-console.log('3-168) отфильтровано ', filteredObject)
+console.log('3-192) отфильтровано ', filteredObject)
+console.log('---------------- Синхронная часть закончилась ----------------')
 
+// /*- 1й тест промиса - последовательный */
+let testAnswer = promiseFiltration(initialObject)
+
+// /*- 2й тест промиса - с рекурсией */
 let testAnswer2 = promiseFiltration2(initialObject, 'Name=initialObject')
 testAnswer2
-.then(console.log('6-176) отфильтровано testAnswer2: ', testAnswer2))
+.then(result =>{
+  console.log('---------------- 2й тест. Часть 1. установка фильтров ----------------')
+  console.log('6-228) установлены фильтры: ', result)
+  return result
+})
+.then(result =>{
+  console.log('---------------- 2й тест. Часть 2. Проверка перед фильтрацией ----------------')
+  console.log('7-232) result: ', result)
+  console.log('---------------- 2й тест. Часть 3. Фильтрация ----------------')
+  let testObj = filterObject2(result)
+  console.log('7-234) отфильтровано: ', testObj)
+  console.log('---------------- 2й тест окончен----------------')
+})
