@@ -173,12 +173,19 @@ function setPromiseFilterInRecursion(objFilterOff, nameOfObject){
     }, AnswerDelay ); /* reject('error'); */
   });
 
+  return new Promise((resolve, reject) => {
   if (keysNameArray.includes('filter')) {
-    // ниже возвращался промис и не работал с фильтрацией
+    // 1. ниже возвращался промис и не работал с фильтрацией. переделал на прием значения изнутри промса через внешнюю переменную
     /* objFilterOn.filter= backEndAnswer().then(res=>{objFilterOn.filter= res})*/
-    backEndAnswer.then(res=>{
-      objFilterOn.filter= res
-      console.log('180) objFilterOn.filter', objFilterOn.filter)
+    // 2я попытка
+    // backEndAnswer.then(res=>{
+    //   objFilterOn.filter= res
+    //   console.log('181) objFilterOn.filter', objFilterOn.filter)
+    // })
+    // 3я попытка:
+    objFilterOn.filter=backEndAnswer.then(res=>{
+      console.log('181) objFilterOn.filter', objFilterOn.filter)
+      return res
     })
   } 
   for (const [key, value] of Object.entries(objFilterOff)) {
@@ -193,49 +200,61 @@ function setPromiseFilterInRecursion(objFilterOff, nameOfObject){
       }
     }
   }
-
-  return new Promise((resolve, reject) => {
+  // 4я попытка. уберу промис выше = оберну все в промис 
+  // return new Promise((resolve, reject) => {
       resolve(objFilterOn)
   })
+  // return (objFilterOn)
 }
 
 function filterObject2(obj){
-  console.log('203) Входящий obj =', obj)
-  let test
+  return new Promise((resolve, reject) => {
+  console.log('212) Входящий obj =', obj)
+  let test;
   let filteredObject={}
     Object.entries(obj).forEach(([key, value]) => {
-      if (key ==='filter') {
-        console.log('192) key =', key,'; value= ', value)
-        let setFilter= value.then(res=>{return test=res})
-        console.log('194) test =', test)
-      }
-      if ((key ==='filter') && (obj[key] === true)) {
-        console.log('195) Простое значение. key = ', key,'; value= ', value)          
-        filteredObject = 'цензура'
-      } else {
-        if ((typeof(value) !='object')||(value ===null)) {
-          // console.log('196) Простое значение. key = ', key,'; value= ', value)          
-          filteredObject[key] = value
-        } else {
-          // console.log('199) Объект. key = ', key,'; value= ', value)          
-          filteredObject[key] = filterObject2(value)
+      new Promise ((resolve, reject) => {
+        console.log('216) key =', key,'; value= ', value)
+        if (key ==='filter') {
+          console.log('218) key =', key,'; value= ', value)
+          value.then(res=>{
+            console.log('220) test =', res)
+            test=res
+            return test
+          })
         }
-      }
+      })
+      .then(res=>{
+        if ((key ==='filter') && (res === true)) {
+          console.log('225) Простое значение.  key = ', key,'; value= ', value)          
+          filteredObject = 'цензура'
+        } else {
+          if ((typeof(value) !='object')||(value ===null)) {
+            // console.log('226) Простое значение. key = ', key,'; value= ', value)          
+            filteredObject[key] = value
+          } else {
+            // console.log('229) Объект. key = ', key,'; value= ', value)          
+            filteredObject[key] = filterObject2(value)
+          }
+        }
+      })
     });
-  return new Promise((resolve, reject) => {
+    //5я попытка - убираю промис
+  // return new Promise((resolve, reject) => {
     resolve(filteredObject)
   })
+  // return(filteredObject)
 }
 // -----------  БЛОК параметры первичного обьекта ----------- 
 /*ширина объекта*/ let length =2  
-/*глубина */  let depth=2
+/*глубина */  let depth=1
 let initialObject=createRandomObj(length, 0, depth)
-console.log('1-233) начальный обьект: ', initialObject)
+console.log('1-242) начальный обьект: ', initialObject)
 // -----------  БЛОК синхронный. Выводы результатов ----------- 
 let settedFiltersObject = setFilter(initialObject, 'initialObjectID')
-console.log('2-236) вывод с включенным фильтром ', settedFiltersObject)
+console.log('2-245) вывод с включенным фильтром ', settedFiltersObject)
 let filteredObject =filterObject(settedFiltersObject)
-console.log('3-238) отфильтровано ', filteredObject)
+console.log('3-247) отфильтровано ', filteredObject)
 console.log('---------------- Синхронная часть закончилась ----------------')
 // /*- 1й тест промиса - последовательный */
 let testAnswer = promiseFiltration_test1_serially(initialObject)
@@ -244,14 +263,14 @@ let testAnswer2 = setPromiseFilterInRecursion(initialObject, 'Name=initialObject
 testAnswer2
 .then(result =>{
   console.log('---------------- 2й тест. Часть 1. установка фильтров ----------------')
-  console.log('6-247) установлены фильтры: ', result)
+  console.log('6-256) установлены фильтры: ', result)
   return result
 })
 .then(result =>{
   console.log('---------------- 2й тест. Часть 2. Проверка перед фильтрацией ----------------')
-  console.log('7-252) result: ', result)
+  console.log('7-261) result: ', result)
   console.log('---------------- 2й тест. Часть 3. Фильтрация ----------------')
   let testObj = filterObject2(result)
-  console.log('7-255) отфильтровано: ', testObj)
+  console.log('7-264) отфильтровано: ', testObj)
   console.log('---------------- 2й тест окончен----------------')
 })
