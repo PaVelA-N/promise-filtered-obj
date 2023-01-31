@@ -48,7 +48,6 @@ function backEndAnswer(key){
     AnswerDelay = getRandomInRange(100,200)
     setTimeout(() => {
       resolve(Answer);
-      key=Answer;
     }, AnswerDelay );
     // reject('error'); 
   });
@@ -81,7 +80,7 @@ function setPromiseFilterInRecursion2(objFilterOff, nameOfObject){
   let keysNameArray = Object.keys(objFilterOff)
   if (keysNameArray.includes('filter')) {
     arrayNextElementID=requestArray.length
-    requestArray[arrayNextElementID] = backEndAnswer(nameOfObject.filter)
+    requestArray[arrayNextElementID] = backEndAnswer()
     requestArray[arrayNextElementID]
     .then(res=>{
       objFilterOn.filter=res
