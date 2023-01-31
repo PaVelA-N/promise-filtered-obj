@@ -44,7 +44,7 @@ function backEndAnswer(key){
   const backEndAnswer = new Promise((resolve, reject) => {
     let Answer;  
     let AnswerDelay;
-    Answer = Math.round(getRandomInRange(0,10))>1 ? true : false
+    Answer = Math.round(getRandomInRange(0,10))>5 ? true : false
     AnswerDelay = getRandomInRange(100,200)
     setTimeout(() => {
       // console.log('926 ) рандомный Answer в промисе. пока не используется ', Answer)  
@@ -249,28 +249,96 @@ function filterObject2(obj){
 /*ширина объекта*/ let length =2  
 /*глубина */  let depth=1
 let initialObject=createRandomObj(length, 0, depth)
-console.log('1-242) начальный обьект: ', initialObject)
+// console.log('1-242) начальный обьект: ', initialObject)
 // -----------  БЛОК синхронный. Выводы результатов ----------- 
-let settedFiltersObject = setFilter(initialObject, 'initialObjectID')
-console.log('2-245) вывод с включенным фильтром ', settedFiltersObject)
-let filteredObject =filterObject(settedFiltersObject)
-console.log('3-247) отфильтровано ', filteredObject)
-console.log('---------------- Синхронная часть закончилась ----------------')
+// let settedFiltersObject = setFilter(initialObject, 'initialObjectID')
+// 1console.log('2-245) вывод с включенным фильтром ', settedFiltersObject)
+// let filteredObject =filterObject(settedFiltersObject)
+// console.log('3-247) отфильтровано ', filteredObject)
+// console.log('---------------- Синхронная часть закончилась ----------------')
 // /*- 1й тест промиса - последовательный */
-let testAnswer = promiseFiltration_test1_serially(initialObject)
+// let testAnswer = promiseFiltration_test1_serially(initialObject)
 // /*- 2й тест промиса - с рекурсией */
-let testAnswer2 = setPromiseFilterInRecursion(initialObject, 'Name=initialObject')
-testAnswer2
-.then(result =>{
-  console.log('---------------- 2й тест. Часть 1. установка фильтров ----------------')
-  console.log('6-256) установлены фильтры: ', result)
-  return result
+// let testAnswer2 = setPromiseFilterInRecursion(initialObject, 'Name=initialObject')
+// testAnswer2
+// .then(result =>{
+//   console.log('---------------- 2й тест. Часть 1. установка фильтров ----------------')
+//   console.log('6-256) установлены фильтры: ', result)
+//   return result
+// })
+// .then(result =>{
+//   console.log('---------------- 2й тест. Часть 2. Проверка перед фильтрацией ----------------')
+//   console.log('7-261) result: ', result)
+//   console.log('---------------- 2й тест. Часть 3. Фильтрация ----------------')
+//   let testObj = filterObject2(result)
+//   console.log('7-264) отфильтровано: ', testObj)
+//   console.log('---------------- 2й тест окончен----------------')
+// })
+//------------------ тест 3 ----------------
+
+let testObj={filter:false, Name1: {filter:false, Name1: 'prmtvData1'}, Name2: {filter:false, Name1: 'prmtvData1'}}
+
+function testBackEndAnswer(key){
+  const backEndAnswer = new Promise((resolve, reject) => {
+    let Answer;  
+    let AnswerDelay;
+    Answer = Math.round(getRandomInRange(0,10))>0 ? true : false
+    AnswerDelay = getRandomInRange(100,200)
+    key=Answer;
+    setTimeout(() => {
+      console.log('289 ) рандомный Answer в промисе. пока не используется ', Answer)  
+      resolve(Answer)
+    }, AnswerDelay );
+    // reject('error'); 
+  });
+  return backEndAnswer
+}
+
+testBackEndAnswer(testObj.filter)
+.then(
+  res=>{
+    testObj.Name1.filter = res  
+    testObj.filter = res
+  })
+.then(res=>{
+  // testObj.filter = res
+  console.log('299)++ res', res, '; testObj ', testObj)
 })
-.then(result =>{
-  console.log('---------------- 2й тест. Часть 2. Проверка перед фильтрацией ----------------')
-  console.log('7-261) result: ', result)
-  console.log('---------------- 2й тест. Часть 3. Фильтрация ----------------')
-  let testObj = filterObject2(result)
-  console.log('7-264) отфильтровано: ', testObj)
-  console.log('---------------- 2й тест окончен----------------')
-})
+
+// function filterArray(arr1){
+//   console.log('5 ',arr1);
+//   let filteredArray=arr1.filter(x=> x!=true)
+//   // let arrLength = arr.length
+//   // for (let i=0; i<arrLength; i++) {
+//   //   if (arr[i]===true) {}
+//   // }
+//   return filteredArray
+// }
+
+// let testArray = []
+// let arrayNextElementID
+// let appearPromise
+// function testCircle(){
+//   for (let i=0; i<15; i++) {
+//     appearPromise = getRandomInRange(0, 10) >5 ? true : false
+//     if (appearPromise===true) {
+//       arrayNextElementID=testArray.length
+//       // console.log('2 ', arrayNextElementID)
+//       // testArray[arrayNextElementID]=appearPromise
+//       testArray[arrayNextElementID]=backEndAnswer(i)
+//     }
+//   }
+//   return ''
+// }
+
+// console.log('1 ', testArray,'testArray.length', testArray.length)
+// testCircle()
+// console.log('3 ', testArray,'testArray.length', testArray.length)
+// Promise.all(testArray)
+// .then(res =>{
+//   console.log('4 ',testArray);
+//   return (testArray)
+// })
+// .then(res =>{
+//   console.log('6 ',filterArray(testArray));
+// })
