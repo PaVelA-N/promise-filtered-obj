@@ -30,11 +30,11 @@ function createRandomObj(length, currentDepth, depth){
     keyName ='Name'+(currentDepth) +'-'+i
     randomPrimitiveValueSelector=getRandomInRange(0, 10) >9 ? true : false
     if (randomPrimitiveValueSelector) {
-      obj[keyName]='prmtvData'+Math.round(getRandomInRange(0, 10))
+      obj[keyName]='prmtv_'+Math.round(getRandomInRange(0, 10))
     } else {
       if (currentDepth !==depth) {obj[keyName]=createRandomObj(length, currentDepth+1, depth)
       }else {
-        obj[keyName]='prmtvData'+Math.round(getRandomInRange(0, 10))
+        obj[keyName]='prmtv_'+Math.round(getRandomInRange(0, 10))
       }
     }
   }
@@ -53,64 +53,49 @@ function backEndAnswer(key){
   });
   return backEndAnswer
 }
-function filterObject(obj){
-  // console.log('59) obj =', obj)
-  let filteredObject={}
-    Object.entries(obj).forEach(([key, value]) => {
-      // console.log('63) key =', key,'value', value)
-      // if (key ==='filter') {console.log('64) key =', key,'value', value)        }
-      if ((key ==='filter') && (value === true)) {
-        filteredObject = 'цензура'
-      } else {
-        if ((typeof(value) !='object')||(value ===null)) {
-          filteredObject[key] = value
-        } else {
-          filteredObject[key] = filterObject(value)
-        }
-      }
-    });
-  return filteredObject
-}
-// -----------  БЛОК тестирования функций -----------   
-let requestArray=[]
-let arrayNextElementID
+// -----------   БЛОК параметры первичного обьекта ----------- 
+/* ширина объекта*/ let width =3  
+/* глубина */  let depth=2
+// ----------- БЛОК тестирования функций -----------   
+let initialObject4=createRandomObj(width, 0, depth)
+console.log('61-1) Начальный обьект 3: ', initialObject4)
+let requestArray4=[]
+let nameArray=[]
+let arrayNextElementID4
 
-function setPromiseFilterInRecursion2(objFilterOff, nameOfObject){
+function test4_setPromiseFilterInRecursion_tasksMinimisation(objFilterOff, ObjName) {
   let objFilterOn={}
-  let keysNameArray = Object.keys(objFilterOff)
-  if (keysNameArray.includes('filter')) {
-    arrayNextElementID=requestArray.length
-    requestArray[arrayNextElementID] = backEndAnswer()
-    requestArray[arrayNextElementID]
-    .then(res=>{
-      objFilterOn.filter=res
-    })
-  } 
+  // console.log('2- 68) : objFilterOff', objFilterOff)
   for (const [key, value] of Object.entries(objFilterOff)) {
-    if (key !=='filter') {
-      if ((typeof(value)==='object')&&(value!=null)) {
-        objFilterOn[key]=setPromiseFilterInRecursion2(value,key)
-      } else {
-        objFilterOn[key] = value
-      }
+    if ((typeof(value)==='object')&&(value!=null)) {
+      // console.log('3- 71) : key', key, value)
+      arrayNextElementID4=requestArray4.length
+      nameArray[arrayNextElementID4]=ObjName+'-'+key
+      requestArray4[arrayNextElementID4] = backEndAnswer()
+      requestArray4[arrayNextElementID4]
+      .then(res=>{
+        // objFilterOn[key]={filter:res}
+        // // console.log('4- 78) : key', key, value, res)
+        if (res===true) {
+          objFilterOn[key]='цунзура'
+        } else {
+          objFilterOn[key]=test4_setPromiseFilterInRecursion_tasksMinimisation(value,key)
+        }
+      })
+      .then(res=>{
+
+        return (objFilterOn)      
+      })
+    } else {
+      objFilterOn[key]=value
     }
   }
   return (objFilterOn)
 }
 
-// -----------  БЛОК параметры первичного обьекта ----------- 
-/* ширина объекта*/ let length =3  
-/* глубина */  let depth=3
-let initialObject=createRandomObj(length, 0, depth)
-console.log('1) Начальный обьект: ', initialObject)
+let filteredObject4 = test4_setPromiseFilterInRecursion_tasksMinimisation(initialObject4, 'Name=initialObject')
 
-let settedFiltersObject = setPromiseFilterInRecursion2(initialObject, 'Name=initialObject')
-Promise.all(requestArray)
+Promise.all(requestArray4)
 .then(res=>{
-  console.log('2) Установлены фильтры: ', settedFiltersObject)
-  return (settedFiltersObject)
-})
-.then(res=>{
-let filteredObject =filterObject(res)
-console.log('3) Отфильтровано ', filteredObject)
+  console.log('6- 100) Отфильтровано: ', filteredObject4)
 })
