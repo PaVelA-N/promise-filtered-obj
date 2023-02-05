@@ -60,31 +60,24 @@ function backEndAnswer(key){
 let initialObject4=createRandomObj(width, 0, depth)
 console.log('61-1) Начальный обьект 3: ', initialObject4)
 let requestArray4=[]
-let nameArray=[]
+let nameArray4=[]
 let arrayNextElementID4
 
 function test4_setPromiseFilterInRecursion_tasksMinimisation(objFilterOff, ObjName) {
   let objFilterOn={}
-  // console.log('2- 68) : objFilterOff', objFilterOff)
   for (const [key, value] of Object.entries(objFilterOff)) {
     if ((typeof(value)==='object')&&(value!=null)) {
-      // console.log('3- 71) : key', key, value)
       arrayNextElementID4=requestArray4.length
-      nameArray[arrayNextElementID4]=ObjName+'-'+key
+      nameArray4[arrayNextElementID4]=ObjName+'-'+key
       requestArray4[arrayNextElementID4] = backEndAnswer()
       requestArray4[arrayNextElementID4]
       .then(res=>{
-        // objFilterOn[key]={filter:res}
-        // // console.log('4- 78) : key', key, value, res)
         if (res===true) {
           objFilterOn[key]='цунзура'
         } else {
           objFilterOn[key]=test4_setPromiseFilterInRecursion_tasksMinimisation(value,key)
+          return (objFilterOn)      
         }
-      })
-      .then(res=>{
-
-        return (objFilterOn)      
       })
     } else {
       objFilterOn[key]=value
@@ -93,9 +86,14 @@ function test4_setPromiseFilterInRecursion_tasksMinimisation(objFilterOff, ObjNa
   return (objFilterOn)
 }
 
-let filteredObject4 = test4_setPromiseFilterInRecursion_tasksMinimisation(initialObject4, 'Name=initialObject')
-
+let filteredObject4 = test4_setPromiseFilterInRecursion_tasksMinimisation(initialObject4, 'initObject')
+let filterAnswerArray=[]
 Promise.all(requestArray4)
 .then(res=>{
-  console.log('6- 100) Отфильтровано: ', filteredObject4)
+  for (let i=0; i<arrayNextElementID4; i++){
+    filterAnswerArray[i]=[nameArray4[i]+': ', requestArray4[i]]
+  }
+  console.log('2- 93) filterAnswerArray: ', filterAnswerArray)
+  // console.log('3- 94) requestArray4: ', requestArray4)
+  console.log('4- 95) Отфильтровано: ', filteredObject4)
 })
