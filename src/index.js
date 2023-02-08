@@ -55,52 +55,38 @@ function backEndAnswer(key){
 }
 // -----------   БЛОК параметры первичного обьекта ----------- 
 /* ширина объекта*/ let width =3  
-/* глубина */  let depth=2
+/* глубина */  let depth=3
 // ----------- БЛОК тестирования функций -----------   
 let initialObject4=createRandomObj(width, 0, depth)
 console.log('61-1) Начальный обьект 3: ', initialObject4)
-let requestArray4=[]
-let nameArray4=[]
-let arrayNextElementID4
-let filterAnswerArray=[]
 
 function test4_setPromiseFilterInRecursion_tasksMinimisation(objFilterOff, ObjName) {
-  let objFilterOn={}
+  const requestArray4=[]
   for (const [key, value] of Object.entries(objFilterOff)) {
     if ((typeof(value)==='object')&&(value!=null)) {
-      arrayNextElementID4=requestArray4.length
-      nameArray4[arrayNextElementID4]=ObjName+'-'+key
-      // filterAnswerArray[arrayNextElementID4]=[nameArray4[arrayNextElementID4]+': ', null]
-      requestArray4[arrayNextElementID4] = backEndAnswer()
-      requestArray4[arrayNextElementID4]
-      .then(res=>{
-        // console.log('75) arrayNextElementID4: ', arrayNextElementID4)
-        // console.log('76) nameArray4[arrayNextElementID4]: ', nameArray4[arrayNextElementID4])
-        // filterAnswerArray[arrayNextElementID4][1]=res
-        if (res===true) {
-          objFilterOn[key]='цeнзура'
-        } else {
-          objFilterOn[key]=test4_setPromiseFilterInRecursion_tasksMinimisation(value,key)
-          return (objFilterOn)      
-        }
-      })
+      requestArray4.push(backEndAnswer().then(
+        res => res? 'хрен вам':test4_setPromiseFilterInRecursion_tasksMinimisation(value,key)
+      ))
     } else {
-      objFilterOn[key]=value
+      requestArray4.push(value)
     }
   }
-  return (objFilterOn)
+
+  return Promise.all(requestArray4).then(array => {
+    // debugger
+    const obj = {}
+    let i=0
+    for(const [key] of Object.entries(objFilterOff)) {
+      obj[key] = array[i];
+      i++
+    }
+    return obj
+  })
+
+}
+async function x(){
+let filteredObject4 = await test4_setPromiseFilterInRecursion_tasksMinimisation(initialObject4, 'initObject')
+console.log(filteredObject4)
 }
 
-let filteredObject4 = test4_setPromiseFilterInRecursion_tasksMinimisation(initialObject4, 'initObject')
-
-Promise.all(requestArray4)
-.then(res=>{
-  for (let i=0; i<arrayNextElementID4+1;i++){
-    filterAnswerArray[i]=[null,0]
-    filterAnswerArray[i][0]=nameArray4[i]+': '
-    requestArray4[i].then(res2=>{filterAnswerArray[i][1]=res2})
-  }
-  console.log('2-103) filterAnswerArray: ', filterAnswerArray)
-  // console.log('3- 94) requestArray4: ', requestArray4)
-  console.log('4-105) Отфильтровано: ', filteredObject4)
-})
+x()
